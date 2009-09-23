@@ -66,7 +66,7 @@ def choose_object(container):
 
 
 def cf_ls():
-    ls_options = OptionParser(usage="ls [OPTION] [container]")
+    ls_options = OptionParser(usage="ls [container]")
     (options, args) = ls_options.parse_args()
     if len(args) > 1:
         ls_options.print_help()
@@ -107,7 +107,7 @@ def cf_ls():
 
 
 def cf_rm():
-    rm_options = OptionParser(usage="rm [OPTION] container[/file]")
+    rm_options = OptionParser(usage="rm [OPTION] container[/object]")
     rm_options.add_option('-r', '--recursive',
                           action="store_true",
                           default=False,
@@ -143,7 +143,7 @@ def cf_cp():
     epilog = """by default it will copy the file to the current
 directory unless [dest] is specified. Only one way for now (from
 remote to local) and one file only."""
-    cp_options = OptionParser(usage="cp container/file [dest]", \
+    cp_options = OptionParser(usage="cp container/object [dest]", \
                                   epilog=epilog)
     (options, args) = cp_options.parse_args()
     if len(args) >= 1:
@@ -164,12 +164,18 @@ if __name__ == '__main__':
     except(cloudfiles.errors.AuthenticationFailed):
         print "Error: Username or API Key is invalid."
         sys.exit(1)
+        
     base_name = os.path.basename(sys.argv[0])
+    if base_name == "cf_helper":
+        sys.argv = [x for x in sys.argv if os.path.basename(x) != "cf_helper" ]
+        base_name = os.path.basename(sys.argv[0])
+        
     if base_name == "cp":
         cf_cp()
     elif base_name == "rm":
         cf_rm()
     elif base_name == "ls":
         cf_ls()
+
 
 

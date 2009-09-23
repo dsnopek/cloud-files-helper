@@ -1,0 +1,58 @@
+Introduction
+============
+
+cf_helper - Cloud File Helper
+
+This is a simple tool for Rackspace cloud files to allow to ls cp or
+rm files.
+
+REQUIREMENT
+===========
+
+Python >= 2.5
+python-cloudfiles >= 1.3.0
+
+Authentication
+==============
+
+If variable RCLOUD_API_USER and RCLOUD_API_KEY are not set it will
+request you for your username and your api_key to connect to Rackspace
+Cloud File
+
+USAGE
+=====
+
+cf_helper can be used with :
+
+cf_helper command options
+
+or if you link cf_helper to a command like :
+
+ln -s cf_helper ls 
+
+it will call the command directly.
+
+All options support the -h option for documentation.
+
+COMMAND:
+========
+
+ls [container]
+
+if no arg is specified it will list all containers or if a container
+is specified it will list the content of the container
+
+--
+
+cp container/file [dest]
+
+copy file from remote (ie: only get for now) and put it in the
+destination if specified or the current directory by default.
+
+--
+
+rm [OPTION] container[/object]
+
+remove a file from a container or if no /object is specified will
+delete a container. You need to specify the -r option to do a
+recursive delete of a container.
