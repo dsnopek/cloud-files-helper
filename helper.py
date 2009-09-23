@@ -60,22 +60,30 @@ def choose_object(cnx, container):
         sys.exit(1)
     return objects[num - 1]
 
-def ls(cnx, just_container=False):
-    if just_container:
-        for container in sorted(cnx.list_containers()):
-            print container
-        return
-    if len(sys.argv) > 1:
-        container=sys.argv[1]
+def ls(cnx):
+    cp_options = OptionParser(usage="ls [OPTION] [container]")
+    (options, args) = cp_options.parse_args()
+
+    if len(args) > 1:
+            cp_options.print_help()
+            sys.exit(0)
+    
+    if not args:
+            print "Listing Containers:"
+            for container in sorted(cnx.list_containers()):
+                    print container
+            return
     else:
-        container = choose_container(cnx)
-        print
-        print "Listing container: %s" % container
+            container=args[0]
+            
     try:
         cnt = cnx.get_container(container)
     except(cloudfiles.errors.NoSuchContainer):
         print "No such container: %s" % container
         sys.exit(1)
+
+    print
+    print "Listing container: %s" % container
     objects=cnt.list_objects()
     if not objects:
         print "No files in '%s'" % container
@@ -90,6 +98,7 @@ def ls(cnx, just_container=False):
             size=o.size
             total_size += o.size
         print "%-30s %-30s %-30s" % (o.name, "".join(format_bytes(size)), o.content_type)
+    print
     print "Total: Size: %s Objects: %d" % ("".join(format_bytes(total_size)), len(objects))
         
 def rm(cnx, rm_container=False):
@@ -155,9 +164,4 @@ if __name__ == '__main__':
     elif name == "rm":
         rm(cnx)
     elif name == "ls":
-        just_container=False
-        if '-c' in sys.argv:
-            sys.argv.remove('-c')
-            just_container=True
-
-        ls(cnx, just_container=just_container)     
+        ls(cnx)     
