@@ -1,10 +1,14 @@
 #!/usr/bin/env python
-#Hacky
-import cloudfiles
-import os,sys
+# Chmouel Boudjnah <chmouel.boudjnah@rackspace.co.uk>
+import os
+import sys
 
-username="RCLOUD_API_USER" in os.environ and os.environ["RCLOUD_API_USER"] or raw_input("Username: ")
-api_key="RCLOUD_API_KEY" in os.environ and os.environ["RCLOUD_API_KEY"] or raw_input("API Key: ")
+from optparse import OptionParser
+
+import cloudfiles
+
+USERNAME="RCLOUD_API_USER" in os.environ and os.environ["RCLOUD_API_USER"] or raw_input("Username: ")
+API_KEY="RCLOUD_API_KEY" in os.environ and os.environ["RCLOUD_API_KEY"] or raw_input("API Key: ")
 
 def format_bytes(bytes, precision=2):
         labels = (
@@ -88,12 +92,17 @@ def ls(cnx, just_container=False):
         print "%-30s %-30s %-30s" % (o.name, "".join(format_bytes(size)), o.content_type)
     print "Total: Size: %s Objects: %d" % ("".join(format_bytes(total_size)), len(objects))
         
-def rm(cnx, rm_container=False, recursive=False):
-    if rm_container:
-        if len(sys.argv) > 1:
-            container=sys.argv[1]
-        else:
-            container = choose_container(cnx)
+def rm(cnx, rm_container=False):
+    cp_options = OptionParser(usage="rm [OPTION] container[/file]")
+    cp_options.add_option('-r', '--recursive', action="store_true", default=False, help="Recursive delete for container.")
+    (options, args) = cp_options.parse_args()
+    if not args:
+        cp_options.print_help()
+        sys.exit(0)
+    
+    recursive = options.recursive
+    if not "/" in args[0]:
+        container=args[0]
 
         if recursive:
             container = cnx.get_container(container)
@@ -107,30 +116,35 @@ def rm(cnx, rm_container=False, recursive=False):
         else:
             print "Container %s deleted." % container
         return
-
-    if len(sys.argv) > 1:
-        container,obj=sys.argv[1].split("/")
-        container = cnx.get_container(container)
     else:
-        container = cnx.get_container(choose_container(cnx))
-        obj = choose_object(cnx, container)
-        
-    print dir(container)
+        container,obj=args[0].split("/")
+        container = cnx.get_container(container)        
+        container.delete_object(obj)
         
 def cp(cnx, rm_container=False, recursive=False):
-    if len(sys.argv) > 1:
-        container,obj=sys.argv[1].split("/")
+    dest="./"
+    epilog="""by default it will copy the file to the current
+directory unless [dest] is specified. Only one way for now (from
+remote to local) and one file only."""
+    cp_options = OptionParser(usage="cp container/file [dest]", \
+                                  epilog=epilog)
+    (options, args) = cp_options.parse_args()
+    
+    if len(args) >= 1:
+        if len(args) == 2:
+            dest = args[1]
+        container,obj=args[0].split("/")
         container = cnx.get_container(container)
     else:
         container = cnx.get_container(choose_container(cnx))
         obj = choose_object(cnx, container)
 
     obj = container.get_object(obj)
-    obj.save_to_filename(str(obj))
+    obj.save_to_filename(os.path.join(dest, str(obj)))
     
 if __name__ == '__main__':
     try:
-        cnx = cloudfiles.get_connection(username, api_key)
+        cnx = cloudfiles.get_connection(USERNAME, API_KEY)
     except(cloudfiles.errors.AuthenticationFailed):
         print "Error: Username or API Key is invalid."
         sys.exit(1)
@@ -139,16 +153,7 @@ if __name__ == '__main__':
     if name == "cp":
         cp(cnx)
     elif name == "rm":
-        rm_container=False
-        recursive=False
-        if '-c' in sys.argv:
-            sys.argv.remove('-c')
-            rm_container=True
-            if '-r' in sys.argv:
-                recursive=True
-                sys.argv.remove('-r')
-        
-        rm(cnx, rm_container=rm_container, recursive=recursive)
+        rm(cnx)
     elif name == "ls":
         just_container=False
         if '-c' in sys.argv:
