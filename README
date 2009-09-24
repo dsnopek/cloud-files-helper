@@ -1,7 +1,7 @@
 Introduction
 ============
 
-cf_helper - Cloud File Helper
+cf-helper - Cloud File Helper
 
 This is a simple tool for Rackspace cloud files to allow to ls cp or
 rm files.
@@ -22,13 +22,13 @@ Cloud File
 USAGE
 =====
 
-cf_helper can be used with :
+cf-helper can be used with :
 
-cf_helper command options
+cf-helper command options
 
-or if you link cf_helper to a command like :
+or if you link cf-helper to a command like :
 
-ln -s cf_helper ls 
+ln -s cf-helper ls 
 
 it will call the command directly.
 
