@@ -6,6 +6,8 @@ cf-helper - Cloud File Helper
 This is a simple tool for Rackspace cloud files to allow to ls cp or
 rm files.
 
+This is really a collection of quickly written scripts that should get improved with time.
+
 REQUIREMENT
 ===========
 
