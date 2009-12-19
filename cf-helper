@@ -65,6 +65,7 @@ def choose_object(container):
 
 
 def cf_ls():
+    obj = None
     ls_options = OptionParser(usage="ls [container]")
     (options, args) = ls_options.parse_args() # pylint: disable-msg=W0612
     if len(args) > 1:
@@ -77,12 +78,21 @@ def cf_ls():
         return
     else:
         container = args[0]
+        if "/" in container:
+            container, obj = container.split("/")
     try:
         cnt = CONNEXION.get_container(container)
     except(cloudfiles.errors.NoSuchContainer):
         print "No such container: %s" % container
         sys.exit(1)
 
+    if obj:
+        cobj = cnt.get_object(obj)
+        
+        print "%s %s %d %s" % (cobj.name, cobj.content_type,
+                               cobj.size, cobj.public_uri())
+        return
+        
     print
     print "Listing container: %s" % container
     objects = cnt.list_objects()
