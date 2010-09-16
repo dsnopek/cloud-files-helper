@@ -67,6 +67,10 @@ def choose_object(container):
 def cf_ls():
     obj = None
     ls_options = OptionParser(usage="ls [container]")
+    ls_options.add_option('-l', '--long',
+                          action="store_true",
+                          default=False,
+                          help="Long description.")
     (options, args) = ls_options.parse_args() # pylint: disable-msg=W0612
     if len(args) > 1:
         ls_options.print_help()
@@ -74,7 +78,11 @@ def cf_ls():
     if not args:
         print "Listing Containers:"
         for container in sorted(CONNEXION.list_containers()):
-            print container
+            if options.long:
+                cnt = CONNEXION.get_container(container)
+                print "%s %s %s" % (cnt, cnt.object_count, cnt.size_used)
+            else:
+                print container
         return
     else:
         container = args[0]
